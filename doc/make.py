@@ -15,6 +15,7 @@ Usage
 import argparse
 import csv
 import importlib
+import json
 import os
 import shutil
 import subprocess
@@ -374,6 +375,23 @@ def main():
     # Set the matplotlib backend to the non-interactive Agg backend for all
     # child processes.
     os.environ["MPLBACKEND"] = "module://matplotlib.backends.backend_agg"
+
+    # Validate versions.json is valid JSON
+    versions_path = os.path.abspath(
+        os.path.join(DOC_PATH, "..", "web", "pandas", "versions.json")
+    )
+    if os.path.exists(versions_path):
+        try:
+            with open(versions_path, encoding="utf-8") as f:
+                json.load(f)
+        except json.JSONDecodeError as e:
+            sys.stderr.write(f"\n[ERROR] Invalid JSON in {versions_path}:\n{e}\n\n")
+            sys.exit(1)
+    else:
+        sys.stderr.write(
+            f"\n[WARNING] versions.json not found at {versions_path}, "
+            "skipping validation.\n\n"
+        )
 
     builder = DocBuilder(
         args.num_jobs,
